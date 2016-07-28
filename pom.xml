@@ -1,0 +1,34 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.tenforce.semtech</groupId>
+  <artifactId>SPARQL-parser</artifactId>
+  <version>0.0.2</version>
+  <packaging>jar</packaging>
+
+  <name>SPARQL-parser</name>
+  <description>Provides a class to build and parse SPARQL queries.</description>
+  <url>http://www.tenforce.com/semtech/maven/SPARQL-parser</url>
+
+  <licenses>
+    <license>
+        <name>MIT License</name>
+        <url>http://www.opensource.org/licenses/mit-license.php</url>
+        <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+
+  <scm>
+    <url>http://www.tenforce.com/semtech/maven/SPARQL-parser</url>
+  </scm>
+
+  <dependencies>
+    <!--<dependency>-->
+      <!--<groupId>...</groupId>-->
+      <!--<artifactId>...</artifactId>-->
+      <!--<version>...</version>-->
+    <!--</dependency>-->
+
+  </dependencies>
+
+</project>
