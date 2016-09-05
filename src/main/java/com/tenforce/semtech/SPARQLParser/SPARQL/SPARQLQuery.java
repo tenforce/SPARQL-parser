@@ -1,6 +1,6 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQL;
+package com.tenforce.semtech.SPARQLParser.SPARQL;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements.*;
+import com.tenforce.semtech.SPARQLParser.SPARQLStatements.*;
 
 import java.util.*;
 
@@ -65,6 +65,18 @@ public class SPARQLQuery
 
     // the original query
     private String originalQuery = null;
+
+    /**
+     * Default constructor
+     *
+     * The only reason this constructor exists is to facilitates the cloning of a
+     * SPARQLQuery
+     */
+    public SPARQLQuery()
+    {
+        this.originalQuery = "";
+        initializeVariables();
+    }
 
     /**
      * Constructor that takes a query object and produces a parsed query.
@@ -373,5 +385,137 @@ public class SPARQLQuery
         }
 
         return asString;
+    }
+
+    /**
+     * default accessor method
+     * @return returns the unknowns
+     */
+    public Set<String> getUnknowns()
+    {
+        return this.unknowns;
+    }
+
+    /**
+     * default accessor method
+     * @return a list of all statements in this query
+     */
+
+    public List<IStatement> getStatements()
+    {
+        return this.statements;
+    }
+
+    /**
+     * default accessor method
+     * @return the type of the query
+     */
+    public Type getType()
+    {
+        return this.type;
+    }
+
+    /**
+     * default setter method
+     * @param type sets this.type to type
+     */
+    public void setType(Type type) {this.type = type;}
+
+    /**
+     * default accessor method
+     * @return the prefixes as a string -> string map
+     */
+    public Map<String, String> getPrefixes()
+    {
+        return this.prefixes;
+    }
+
+    /**
+     * returns the graph IF it is set on the outer level of this query
+     * @return this.graph
+     */
+    public String getGraph()
+    {
+        return this.graph;
+    }
+
+    /**
+     * default setter method for graph
+     * @param graph sets this.graph to graph
+     */
+    public void setGraph(String graph){this.graph = graph;}
+
+    /**
+     * @return the original query before it was parsed
+     */
+    public String getOriginalQuery()
+    {
+        return this.originalQuery;
+    }
+
+    /**
+     * replaces ALL graph statements in this query with the new graph.
+     * The equivalent of removing all graph statemetns would be calling this
+     * function with "" as parameter
+     *
+     * @param newGraph the new graph name
+     */
+    public void replaceGraphStatements(String newGraph)
+    {
+        this.setGraph(newGraph);
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(newGraph);
+    }
+
+    /**
+     * replaces ALL graph statements that are equal to the passed oldGraph
+     * argument with the newGraph argument. If you just want to remove the
+     * oldGraph statements this function can be called with "" as the parameter
+     * for the new graph name
+     *
+     * @param oldGraph the named of the old graph
+     * @param newGraph the name of the new graph
+     */
+    public void replaceGraphStatement(String oldGraph, String newGraph)
+    {
+        if(this.graph != null && this.graph.equals(oldGraph))
+        {
+            this.setGraph(newGraph);
+        }
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(oldGraph, newGraph);
+    }
+
+    /**
+     * A carbon copy of this query
+     * @return a clone of this object
+     */
+    public SPARQLQuery clone()
+    {
+        SPARQLQuery clone = new SPARQLQuery();
+
+        // copying the keys
+        for(String key: this.prefixes.keySet())
+        {
+            clone.getPrefixes().put(key, this.prefixes.get(key));
+        }
+
+        // copy the type
+        clone.setType(this.type);
+
+        // setting the unknowns
+        for(String unknown: this.unknowns)
+        {
+            clone.getUnknowns().add(unknown);
+        }
+
+        // setting the graph
+        clone.setGraph(this.graph);
+
+        // copying the statements
+        for(IStatement statement : this.statements)
+            clone.getStatements().add(statement.clone());
+
+        return clone;
     }
 }

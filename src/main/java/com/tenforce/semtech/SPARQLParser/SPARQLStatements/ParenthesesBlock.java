@@ -1,7 +1,7 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,35 +9,78 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * a string between a '{' and '}'
- */
+ * A ParenthesesBlock is a succession of simple statements between a starting '{'
+ * and ending '}' parentheses. It may also include a graph statement
+  */
 public class ParenthesesBlock implements IStatement
 {
+    // the innerstatements of a parentheses block
     protected List<IStatement> statements = new ArrayList<IStatement>();
 
+    // the graph (if declaration included)
     protected String graph;
 
     protected boolean allowSelect = false;
 
+    // if the block is tagged optional
     protected boolean optional = false;
 
+    /**
+     * Default constructor with a single statementblock and possibly a named
+     * graph on which it operates
+     *
+     * @param block the block between the parentheses
+     * @param graph the named graph
+     */
     public ParenthesesBlock(String block, String graph)
     {
         this.statements.add(new SimpleStatement(block));
         graph = graph;
     }
 
+    /**
+     * Constructor that takes an iterator to construct the parentheses block from it.
+     *
+     * @param iterator the iterator over the query
+     * @param allowSelect
+     * @throws InvalidSPARQLException if the iterator reaches a state which is not compatible with what
+     *          would be expected if the iterator operates on a valid SPARQL query
+     */
     public ParenthesesBlock(SplitQuery.SplitQueryIterator iterator, boolean allowSelect) throws InvalidSPARQLException
     {
         this.allowSelect = allowSelect;
         calculateBlock(iterator);
     }
 
+    /**
+     * Constrcutor that only takes an iterator to operate over
+     *
+     * @param iterator the iterator
+     * @throws InvalidSPARQLException if the iterator reaches a state which is not compatible with what
+     *          would be expected if the iterator operates on a valid SPARQL query
+     */
     public ParenthesesBlock(SplitQuery.SplitQueryIterator iterator) throws InvalidSPARQLException
     {
         calculateBlock(iterator);
     }
 
+    /**
+     * constructor that takes a list of statements and a named graph
+     *
+     * @param statements the list of statements
+     * @param graph the named graph over which they operate
+     */
+    public ParenthesesBlock(List<IStatement> statements, String graph)
+    {
+        this.graph = graph;
+        this.statements = statements;
+    }
+
+    /**
+     * calculates the unknowns (on the fly) and returns them as a set
+     *
+     * @return a set containing all unknowns
+     */
     public Set<String> getUnknowns()
     {
         Set<String> u = new HashSet<String>();
@@ -46,7 +89,14 @@ public class ParenthesesBlock implements IStatement
         return u;
     }
 
-    public void calculateBlock(SplitQuery.SplitQueryIterator iterator) throws InvalidSPARQLException
+    /**
+     * calculates where the block with statements is and what properties it may have
+     *
+     * @param iterator the iterator that operates over the query
+     * @throws InvalidSPARQLException if the iterator reaches a state which is not compatible with what
+     *          would be expected if the iterator operates on a valid SPARQL query
+     */
+    private void calculateBlock(SplitQuery.SplitQueryIterator iterator) throws InvalidSPARQLException
     {
         if(!iterator.hasNext())
         {
@@ -134,6 +184,19 @@ public class ParenthesesBlock implements IStatement
                 continue;
             }
 
+            // the statment is at its end
+            if(iterator.peekNext().startsWith("."))
+            {
+                iterator.next();
+                iterator.breakOff(".");
+                if(!block.trim().isEmpty())
+                {
+                    statements.add(new SimpleStatement(block + " ."));
+                }
+                block = "";
+                continue;
+            }
+
             String nextPart = iterator.nextIncludingNewLines();
 
             if (nextPart.trim().equals("\n")) {
@@ -144,11 +207,30 @@ public class ParenthesesBlock implements IStatement
         }
     }
 
+    /**
+     * @param allowSelect this.allowSelect = allowSelect
+     */
+    public void setAllowSelect(boolean allowSelect)
+    {
+        this.allowSelect = allowSelect;
+    }
+
+    /**
+     * @param optional this.optional = optional
+     */
+    public  void setOptional(boolean optional)
+    {
+        this.optional = optional;
+    }
+
+    /**
+     * @return a string representation of this block
+     */
     public String toString()
     {
         String toreturn = "";
 
-        if(graph != null)
+        if(graph != null && !graph.trim().isEmpty())
         {
             toreturn += "GRAPH <" + this.graph + ">";
         }
@@ -156,13 +238,80 @@ public class ParenthesesBlock implements IStatement
         if(optional)
             toreturn += "OPTIONAL ";
 
-        toreturn += "{\n";
+        if(optional || (graph != null && !graph.trim().isEmpty()))
+            toreturn += "{\n";
 
         for(IStatement statement : statements)
             toreturn += statement.toString();
 
-        toreturn += "\n}";
+        if(optional || (graph != null && !graph.trim().isEmpty()))
+            toreturn += "\n}";
 
         return toreturn;
+    }
+
+    /**
+     * @return StatementType.PARENTHESESBLOCK
+     */
+    public StatementType getType()
+    {
+        return StatementType.PARENTHESESBLOCK;
+    }
+
+    /**
+     * @return a clone of this object
+     */
+    public IStatement clone()
+    {
+        // first clone this block's statements
+        List<IStatement> clonedStatements = new ArrayList<IStatement>();
+        for(IStatement s : this.statements)
+        {
+            clonedStatements.add(s.clone());
+        }
+
+        // then initialize a new block
+        ParenthesesBlock clone = new ParenthesesBlock(clonedStatements, this.graph);
+
+        // setting the 2 booleans
+        clone.setAllowSelect(this.allowSelect);
+        clone.setOptional(this.optional);
+
+        // and returning the clone
+        return clone;
+    }
+
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements with the new
+     * graph name.
+     *
+     * note that to remove all graph statements you can just pass an empty string as parameter
+     *
+     * @param newGraph the name of the new graph
+     */
+    public void replaceGraphStatements(String newGraph)
+    {
+        this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(newGraph);
+    }
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements which are
+     * equal to the oldGraph's name. All graph statements targetting other graphs will remain
+     * untouched.
+     *
+     * @param oldGraph the name of tha graph that needs be replaced
+     * @param newGraph the new graph name
+     */
+    public void replaceGraphStatements(String oldGraph, String newGraph)
+    {
+        if(this.graph.equals(oldGraph))
+            this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(oldGraph, newGraph);
     }
 }

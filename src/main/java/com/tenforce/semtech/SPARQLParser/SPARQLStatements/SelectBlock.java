@@ -1,8 +1,8 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,6 +27,11 @@ public class SelectBlock implements IStatement
     {
         calculateBlock(iterator);
         this.inBlock = inBlock;
+    }
+
+    private SelectBlock()
+    {
+
     }
 
 
@@ -214,5 +219,113 @@ public class SelectBlock implements IStatement
         }
 
         return toreturn;
+    }
+
+    public String getSelectClause() {
+        return selectClause;
+    }
+
+    public void setSelectClause(String selectClause) {
+        this.selectClause = selectClause;
+    }
+
+    public void setUnknowns(Set<String> unknowns) {
+        this.unknowns = unknowns;
+    }
+
+    public String getSelectModifier() {
+        return selectModifier;
+    }
+
+    public void setSelectModifier(String selectModifier) {
+        this.selectModifier = selectModifier;
+    }
+
+    public List<IStatement> getStatements() {
+        return statements;
+    }
+
+    public void setStatements(List<IStatement> statements) {
+        this.statements = statements;
+    }
+
+    public boolean isInBlock() {
+        return inBlock;
+    }
+
+    public void setInBlock(boolean inBlock) {
+        this.inBlock = inBlock;
+    }
+
+    public List<String> getSolutionModifier() {
+        return solutionModifier;
+    }
+
+    public void setSolutionModifier(List<String> solutionModifier) {
+        this.solutionModifier = solutionModifier;
+    }
+
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
+    }
+
+    public StatementType getType() {
+        return StatementType.SELECTBLOCK;
+    }
+
+    public SelectBlock clone()
+    {
+        SelectBlock clone = new SelectBlock();
+
+        clone.setSelectClause(this.selectClause);
+        clone.setSelectModifier(this.selectModifier);
+        clone.setGraph(this.graph);
+        clone.setInBlock(this.inBlock);
+        for(String u : this.unknowns)
+            clone.getUnknowns().add(u);
+        for(String s : this.solutionModifier)
+            clone.getSolutionModifier().add(s);
+        for(IStatement s : this.statements)
+            clone.getStatements().add(s.clone());
+
+        return this.clone();
+    }
+
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements with the new
+     * graph name.
+     *
+     * note that to remove all graph statements you can just pass an empty string as parameter
+     *
+     * @param newGraph the name of the new graph
+     */
+    public void replaceGraphStatements(String newGraph)
+    {
+        this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(newGraph);
+    }
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements which are
+     * equal to the oldGraph's name. All graph statements targetting other graphs will remain
+     * untouched.
+     *
+     * @param oldGraph the name of tha graph that needs be replaced
+     * @param newGraph the new graph name
+     */
+    public void replaceGraphStatements(String oldGraph, String newGraph)
+    {
+        if(this.graph.equals(oldGraph))
+            this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(oldGraph, newGraph);
     }
 }

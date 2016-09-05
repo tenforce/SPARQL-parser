@@ -1,4 +1,4 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQL;
+package com.tenforce.semtech.SPARQLParser.SPARQL;
 
 /**
  * Created by langens-jonathan on 18.07.16.

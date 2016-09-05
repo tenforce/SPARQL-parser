@@ -1,7 +1,7 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
 
 /**
  * Created by langens-jonathan on 25.07.16.
@@ -51,5 +51,14 @@ public class AskBlock extends ParenthesesBlock {
         toreturn += "\n}";
 
         return toreturn;
+    }
+
+    /**
+     * inspector that returns the type
+     * @return ASK
+     */
+    public StatementType getType()
+    {
+        return StatementType.ASK;
     }
 }

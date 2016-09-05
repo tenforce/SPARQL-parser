@@ -1,7 +1,7 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,13 +13,18 @@ import java.util.Set;
  */
 public class WhereBlockStatement extends BlockStatement
 {
-    private List<IStatement> statements = new ArrayList<IStatement>();
+    //private List<IStatement> statements = new ArrayList<IStatement>();
 
     public WhereBlockStatement(String block, String graph)
     {
         this.statements.add(new SimpleStatement(block));
         this.type = BLOCKTYPE.WHERE;
         this.graph = graph;
+    }
+
+    private WhereBlockStatement()
+    {
+
     }
 
     public WhereBlockStatement(SplitQuery.SplitQueryIterator iterator) throws InvalidSPARQLException
@@ -100,4 +105,26 @@ public class WhereBlockStatement extends BlockStatement
         return toReturn;
     }
 
+    @Override
+    public StatementType getType() {
+        return StatementType.WHEREBLOCK;
+    }
+
+    public void setType(BLOCKTYPE type){this.type = type;}
+
+    public WhereBlockStatement clone()
+    {
+        WhereBlockStatement clone = new WhereBlockStatement();
+
+        clone.setType(this.type);
+        clone.setGraph(this.graph);
+
+        for(IStatement s : this.statements)
+            clone.getStatements().add(s.clone());
+
+        for(String s : this.getUnknowns())
+            clone.getUnknowns().add(s);
+
+        return clone;
+    }
 }

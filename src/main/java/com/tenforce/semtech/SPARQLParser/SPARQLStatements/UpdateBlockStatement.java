@@ -1,11 +1,9 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,13 +16,18 @@ import java.util.Set;
  */
 public class UpdateBlockStatement extends BlockStatement
 {
-    private List<IStatement> statements = new ArrayList<IStatement>();
-
+    //private List<IStatement> statements = new ArrayList<IStatement>();
+    private WhereBlockStatement whereBlock = null;
     public UpdateBlockStatement(BLOCKTYPE type, String block, String graph)
     {
         this.statements.add(new SimpleStatement(block));
         this.type = type;
         this.graph = graph;
+    }
+
+    private UpdateBlockStatement()
+    {
+
     }
 
     public Set<String> getUnknowns()
@@ -34,7 +37,6 @@ public class UpdateBlockStatement extends BlockStatement
             u.addAll(s.getUnknowns());
         return u;
     }
-
 
     public UpdateBlockStatement(BLOCKTYPE type, SplitQuery.SplitQueryIterator iterator) throws InvalidSPARQLException
     {
@@ -73,6 +75,21 @@ public class UpdateBlockStatement extends BlockStatement
                 iterator.breakOff("}");
                 if(!block.trim().isEmpty()) {
                     statements.add(new SimpleStatement(block));
+                }
+
+                if(this.getUnknowns().size() > 0)
+                {
+                    if(!iterator.peekNext().toLowerCase().startsWith("where"))
+                    {
+                        throw new InvalidSPARQLException("Invalid SPARQL on line: " + iterator.getCurrentLine() + " expected WHERE clause after " + this.type.name() + " clause around " + iterator.getPrevious());
+                    }
+                }
+
+                if(iterator.hasNext() && iterator.peekNext().toLowerCase().startsWith("where"))
+                {
+                    String where = iterator.next();
+                    iterator.breakOff(where.substring(0, 5));
+                    this.whereBlock = new WhereBlockStatement(iterator);
                 }
                 return;
             }
@@ -115,10 +132,51 @@ public class UpdateBlockStatement extends BlockStatement
 
         toReturn += "\n}";
 
+        if(this.whereBlock != null)
+        {
+            toReturn += "\n" + this.whereBlock.toString();
+        }
+
         return toReturn;
     }
 
+    public WhereBlockStatement getWhereBlock()
+    {
+        return this.whereBlock;
+    }
 
+    public StatementType getType()
+    {
+        return StatementType.UPDATEBLOCK;
+    }
+
+    public BLOCKTYPE getUpdateType() { return this.type; }
+
+    public void setUpdateType(BLOCKTYPE type){this.type = type;}
+
+    public void setWhereBlock(WhereBlockStatement whereBlock)
+    {
+        this.whereBlock = whereBlock;
+    }
+
+    public UpdateBlockStatement clone()
+    {
+        UpdateBlockStatement clone = new UpdateBlockStatement();
+
+        clone.setGraph(this.graph);
+        if(this.whereBlock != null)
+            clone.setWhereBlock(this.whereBlock.clone());
+
+        clone.setUpdateType(this.type);
+
+        for(IStatement s : this.statements)
+            clone.getStatements().add(s.clone());
+
+        for(String s : this.getUnknowns())
+            clone.getUnknowns().add(s);
+
+        return clone;
+    }
 
 
 //    private void extractBlocks(SplitQuery.SplitQueryIterator iterator, UpdateBlockStatement.BLOCKTYPE type) throws InvalidSPARQLException {

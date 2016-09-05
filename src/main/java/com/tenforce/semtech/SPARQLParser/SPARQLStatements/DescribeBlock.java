@@ -1,7 +1,7 @@
-package main.java.com.tenforce.semtech.SPARQLParser.SPARQLStatements;
+package com.tenforce.semtech.SPARQLParser.SPARQLStatements;
 
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
-import main.java.com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
+import com.tenforce.semtech.SPARQLParser.SPARQL.InvalidSPARQLException;
+import com.tenforce.semtech.SPARQLParser.SPARQL.SplitQuery;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,6 +57,14 @@ public class DescribeBlock implements IStatement
     {
         calculateBlock(iterator);
         this.inBlock = inBlock;
+    }
+
+    /**
+     * empty constructor, only intended to be used for cloning this object
+     */
+    private DescribeBlock()
+    {
+
     }
 
     /**
@@ -257,5 +265,163 @@ public class DescribeBlock implements IStatement
         }
 
         return toreturn;
+    }
+
+    /**
+     * returns the statement type
+     * @return DESCRIBE
+     */
+    public StatementType getType()
+    {
+        return StatementType.DESCRIBE;
+    }
+
+    /**
+     * @return this.describeClause
+     */
+    public String getDescribeClause() {
+        return describeClause;
+    }
+
+    /**
+     * @param describeClause this.describeClause = describeClause
+     */
+    public void setDescribeClause(String describeClause) {
+        this.describeClause = describeClause;
+    }
+
+    /**
+     * @param unknowns this.unknowns = unknowns
+     */
+    public void setUnknowns(Set<String> unknowns) {
+        this.unknowns = unknowns;
+    }
+
+    /**
+     * @return this.statements
+     */
+    public List<IStatement> getStatements() {
+        return statements;
+    }
+
+    /**
+     * @param statements this.statements = statements
+     */
+    public void setStatements(List<IStatement> statements) {
+        this.statements = statements;
+    }
+
+    /**
+     * @return this.selectModifier
+     */
+    public String getSelectModifier() {
+        return selectModifier;
+    }
+
+    /**
+     * @param selectModifier this.selectModifier = selectModifier
+     */
+    public void setSelectModifier(String selectModifier) {
+        this.selectModifier = selectModifier;
+    }
+
+    /**
+     * @return this.inBlock
+     */
+    public boolean isInBlock() {
+        return inBlock;
+    }
+
+    /**
+     * @param inBlock this.inBlock = inBlock
+     */
+    public void setInBlock(boolean inBlock) {
+        this.inBlock = inBlock;
+    }
+
+    /**
+     * @return this.solutionModifier
+     */
+    public List<String> getSolutionModifier() {
+        return solutionModifier;
+    }
+
+    /**
+     * @param solutionModifier this.solutionModifer = solutionModifier
+     */
+    public void setSolutionModifier(List<String> solutionModifier) {
+        this.solutionModifier = solutionModifier;
+    }
+
+    /**
+     * @return this.graph
+     */
+    public String getGraph() {
+        return graph;
+    }
+
+    /**
+     * @param graph this.graph = graph
+     */
+    public void setGraph(String graph) {
+        this.graph = graph;
+    }
+
+    /**
+     * @return a copy of this object
+     */
+    public DescribeBlock clone()
+    {
+        DescribeBlock clone = new DescribeBlock();
+
+        // copying member vars
+        clone.setDescribeClause(this.describeClause);
+        clone.setSelectModifier(this.selectModifier);
+        clone.setInBlock(this.inBlock);
+        clone.setGraph(this.graph);
+        for(String u : this.unknowns)
+                clone.getUnknowns().add(u);
+        for(String s : this.solutionModifier)
+                clone.getSolutionModifier().add(s);
+        for(IStatement s : this.statements)
+                clone.getStatements().add(s.clone());
+
+        // returning the clone
+        return clone;
+    }
+
+
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements with the new
+     * graph name.
+     *
+     * note that to remove all graph statements you can just pass an empty string as parameter
+     *
+     * @param newGraph the name of the new graph
+     */
+    public void replaceGraphStatements(String newGraph)
+    {
+        this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(newGraph);
+    }
+
+    /**
+     * this will propagate the replacement of ALL subsequent graph statements which are
+     * equal to the oldGraph's name. All graph statements targetting other graphs will remain
+     * untouched.
+     *
+     * @param oldGraph the name of tha graph that needs be replaced
+     * @param newGraph the new graph name
+     */
+    public void replaceGraphStatements(String oldGraph, String newGraph)
+    {
+        if(this.graph.equals(oldGraph))
+            this.graph = newGraph;
+
+        for(IStatement s : this.statements)
+            s.replaceGraphStatements(oldGraph, newGraph);
     }
 }
