@@ -232,19 +232,22 @@ public class ParenthesesBlock implements IStatement
 
         if(graph != null && !graph.trim().isEmpty())
         {
-            toreturn += "GRAPH <" + this.graph + ">";
+            toreturn += "GRAPH <" + this.graph + ">\n{\n";
         }
 
         if(optional)
-            toreturn += "OPTIONAL ";
+            toreturn += "OPTIONAL {\n";
 
-        if(optional || (graph != null && !graph.trim().isEmpty()))
-            toreturn += "{\n";
+//        if(optional || (graph != null && !graph.trim().isEmpty()))
+//            toreturn += "{\n";
 
         for(IStatement statement : statements)
             toreturn += statement.toString();
 
-        if(optional || (graph != null && !graph.trim().isEmpty()))
+        if(optional)
+            toreturn += "\n}";
+
+        if((graph != null && !graph.trim().isEmpty()))
             toreturn += "\n}";
 
         return toreturn;
