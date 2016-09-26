@@ -359,4 +359,12 @@ public class ConstructBlock implements IStatement
         for(IStatement s : this.statements)
             s.replaceGraphStatements(oldGraph, newGraph);
     }
+
+    /**
+     * @return the graph on which this statement operates
+     */
+    public String getGraph()
+    {
+        return this.graph;
+    }
 }

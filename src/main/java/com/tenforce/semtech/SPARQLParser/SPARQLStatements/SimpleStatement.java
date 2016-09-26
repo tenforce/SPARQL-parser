@@ -100,4 +100,15 @@ public class SimpleStatement implements IStatement {
     public void replaceGraphStatements(String oldGraph, String newGraph)
     {
     }
+
+    /**
+     * a simple statement cannot 'have' a graph, therefor it returns null
+     * when asked
+     *
+     * @return null
+     */
+    public String getGraph()
+    {
+        return null;
+    }
 }

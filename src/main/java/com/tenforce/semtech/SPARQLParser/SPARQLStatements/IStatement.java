@@ -71,4 +71,13 @@ public interface IStatement {
      * @param newGraph the new graph name
      */
     public void replaceGraphStatements(String oldGraph, String newGraph);
+
+
+    /**
+     * this will return the graph in which this statement belongs or null if
+     * it does not have a graph
+     *
+     * @return the graph on which this statement operates
+     */
+    public String getGraph();
 }

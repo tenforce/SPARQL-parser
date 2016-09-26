@@ -238,6 +238,19 @@ public class SPARQLQuery
                 continue;
             }
 
+            // we can also describe a graph with "WITH"
+            if(next.toLowerCase().equals("with"))
+            {
+                String graph = iterator.next();
+                if(!graph.startsWith("<") || !graph.endsWith(">"))
+                {
+                    throw new InvalidSPARQLException("Invalid SPARQL on line: " + iterator.getCurrentLine() + graph + "is not a valid graph name near " + iterator.getPrevious());
+                }
+                this.graph = graph.substring(1, graph.length() - 1);
+                continue;
+            }
+
+
             // is it a select?
             if(next.toLowerCase().equals("select"))
             {
@@ -341,6 +354,11 @@ public class SPARQLQuery
                 continue;
             }
 
+            // on the 'root' level of the query i will ignore ;'s
+            if(next.equals(";"))
+            {
+                continue;
+            }
             // oh oh not match found this thing is no SPARQL sir
             throw new InvalidSPARQLException("Invalid SPARQL: on line " + ((SplitQuery.SplitQueryIterator)iterator).getCurrentLine() + " unexpected token: " + next +
                     " this is not correct SPARQL. When this library is updated I will tell what kind of token I expect");

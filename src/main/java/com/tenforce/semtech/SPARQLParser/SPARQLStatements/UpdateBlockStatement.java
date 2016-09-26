@@ -178,6 +178,25 @@ public class UpdateBlockStatement extends BlockStatement
         return clone;
     }
 
+    public String getGraph()
+    {
+        if(this.graph.isEmpty())
+        {
+            String graph = "";
+            for(IStatement statement : this.statements)
+            {
+                if(statement.getType() == StatementType.PARENTHESESBLOCK)
+                {
+                    if(!statement.getGraph().isEmpty())
+                    {
+                        return statement.getGraph();
+                    }
+                }
+            }
+        }
+        return this.graph;
+    }
+
 
 //    private void extractBlocks(SplitQuery.SplitQueryIterator iterator, UpdateBlockStatement.BLOCKTYPE type) throws InvalidSPARQLException {
 //        // a where block is normally homogenous

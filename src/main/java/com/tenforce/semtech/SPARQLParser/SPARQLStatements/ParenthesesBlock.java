@@ -317,4 +317,14 @@ public class ParenthesesBlock implements IStatement
         for(IStatement s : this.statements)
             s.replaceGraphStatements(oldGraph, newGraph);
     }
+
+    /**
+     * returns the graph on which this statement operates
+     *
+     * @return the graph on which this statement operates
+     */
+    public String getGraph()
+    {
+        return this.graph;
+    }
 }
