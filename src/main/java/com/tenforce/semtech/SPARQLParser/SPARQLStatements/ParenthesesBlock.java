@@ -236,10 +236,7 @@ public class ParenthesesBlock implements IStatement
         }
 
         if(optional)
-            toreturn += "OPTIONAL {\n";
-
-//        if(optional || (graph != null && !graph.trim().isEmpty()))
-//            toreturn += "{\n";
+            toreturn += "\nOPTIONAL {\n";
 
         for(IStatement statement : statements)
             toreturn += statement.toString();
